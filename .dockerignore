@@ -1,13 +1,19 @@
+# Node modules
 node_modules
+
+# Logs
 npm-debug.log
 yarn-error.log
+*.log
 
-# Source files (not needed in runtime image)
-src
-test
+# Build / coverage
 coverage
 
-# Env & secrets
+# Source files (not needed in final image)
+src
+test
+
+# Environment files (security)
 .env
 .env.*
 
@@ -15,12 +21,9 @@ coverage
 .git
 .gitignore
 
-# Docker / config
+# Docker / configs
 Dockerfile
 docker-compose.yaml
 
-# Logs
-*.log
-
-# OS files
+# OS / misc
 .DS_Store
