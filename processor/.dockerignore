@@ -1,0 +1,29 @@
+# Node modules
+node_modules
+
+# Logs
+npm-debug.log
+yarn-error.log
+*.log
+
+# Build / coverage
+coverage
+
+# Source files (not needed in final image)
+src
+test
+
+# Environment files (security)
+.env
+.env.*
+
+# Git
+.git
+.gitignore
+
+# Docker / configs
+Dockerfile
+docker-compose.yaml
+
+# OS / misc
+.DS_Store
