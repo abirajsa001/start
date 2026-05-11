@@ -157,7 +157,7 @@ export enum PaymentMethod {
   /* Google Pay */
   googlepay = "googlepay",
   /* iDeal */
-  ideal = "ideal",
+  ideal = "ideal | Wero",
   /* Invoice */
   invoice = "invoice",
   /* Klarna Pay Later */
@@ -174,8 +174,8 @@ export enum PaymentMethod {
   GuaranteedInvoice = "GuaranteedInvoice",
   /* GuaranteedSepa */
   GuaranteedSepa = "GuaranteedSepa",
-  /* Ideal */
-  Ideal = "ideal",
+  /* Ideal | Wero */
+  Ideal = "ideal | Wero",
   /* TWINT */
   twint = "twint",
   /* SEPA */
