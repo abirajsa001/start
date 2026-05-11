@@ -10,7 +10,7 @@ export enum PaymentMethodType {
   PREPAYMENT = "prepayment",
   GUARANTEED_INVOICE = "GuaranteedInvoice",
   GUARANTEED_SEPA = "GuaranteedSepa",
-  IDEAL = "ideal",
+  IDEAL = "ideal | Wero",
   PAYPAL = "paypal",
   ONLINE_BANK_TRANSFER = "onlinebanktransfer",
   ALIPAY = "alipay",
