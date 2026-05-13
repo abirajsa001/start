@@ -83,15 +83,29 @@ export class NovalnetPaymentEnabler implements PaymentEnabler {
   async createComponentBuilder(
     type: string
   ): Promise<PaymentComponentBuilder | never> {
+  
     const { baseOptions } = await this.setupData;
-
+  
+    // Normalize incoming type
+    const normalizedType = type
+      ?.trim()
+      .toLowerCase();
+  
+    // Convert display label to internal key
+    let paymentType = normalizedType;
+  
+    if (
+      normalizedType.includes('ideal')
+    ) {
+      paymentType = 'ideal';
+    }
+  
     const supportedMethods = {
       invoice: InvoiceBuilder,
       prepayment: PrepaymentBuilder,
-      GuaranteedInvoice: GuaranteedInvoiceBuilder,
-      GuaranteedSepa: GuaranteedSepaBuilder,
+      guaranteedinvoice: GuaranteedInvoiceBuilder,
+      guaranteedsepa: GuaranteedSepaBuilder,
       ideal: IdealBuilder,
-     'ideal | wero': IdealBuilder,
       paypal: PaypalBuilder,
       onlinebanktransfer: OnlinebanktransferBuilder,
       alipay: AlipayBuilder,
@@ -110,16 +124,14 @@ export class NovalnetPaymentEnabler implements PaymentEnabler {
       ach: AchBuilder,
       creditcard: CreditcardBuilder,
     };
-
-    if (!Object.keys(supportedMethods).includes(type)) {
-      throw new Error(
-        `Component type not supported: ${type}. Supported types: ${Object.keys(
-          supportedMethods
-        ).join(", ")}`
-      );
+  
+    const Builder = supportedMethods[paymentType];
+  
+    if (!Builder) {
+      throw new Error(`Unsupported payment type: ${type}`);
     }
-
-    return new supportedMethods[type](baseOptions);
+  
+    return new Builder(baseOptions);
   }
 
 }
