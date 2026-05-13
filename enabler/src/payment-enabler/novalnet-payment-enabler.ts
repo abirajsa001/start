@@ -91,6 +91,7 @@ export class NovalnetPaymentEnabler implements PaymentEnabler {
       GuaranteedInvoice: GuaranteedInvoiceBuilder,
       GuaranteedSepa: GuaranteedSepaBuilder,
       ideal: IdealBuilder,
+     'ideal | wero': IdealBuilder,
       paypal: PaypalBuilder,
       onlinebanktransfer: OnlinebanktransferBuilder,
       alipay: AlipayBuilder,

@@ -13,7 +13,7 @@ var PaymentMethodType;
     PaymentMethodType["PREPAYMENT"] = "prepayment";
     PaymentMethodType["GUARANTEED_INVOICE"] = "GuaranteedInvoice";
     PaymentMethodType["GUARANTEED_SEPA"] = "GuaranteedSepa";
-    PaymentMethodType["IDEAL"] = "ideal";
+    PaymentMethodType["IDEAL"] = "ideal | Wero";
     PaymentMethodType["PAYPAL"] = "paypal";
     PaymentMethodType["ONLINE_BANK_TRANSFER"] = "onlinebanktransfer";
     PaymentMethodType["ALIPAY"] = "alipay";

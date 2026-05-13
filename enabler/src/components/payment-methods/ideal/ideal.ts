@@ -27,7 +27,7 @@ export class Ideal extends BaseComponent {
   private showPayButton: boolean;
 
   constructor(baseOptions: BaseOptions, componentOptions: ComponentOptions) {
-    super(PaymentMethod.ideal, baseOptions, componentOptions);
+    super(PaymentMethod.ideal | Wero, baseOptions, componentOptions);
     this.showPayButton = componentOptions?.showPayButton ?? false;
   }
 
