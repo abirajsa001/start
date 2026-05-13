@@ -95,7 +95,7 @@ export class NovalnetPaymentEnabler implements PaymentEnabler {
     let paymentType = normalizedType;
   
     if (
-      normalizedType.includes('ideal | wero')
+      normalizedType.includes('ideal')
     ) {
       paymentType = 'ideal';
     }
