@@ -89,13 +89,13 @@ export class NovalnetPaymentEnabler implements PaymentEnabler {
     // Normalize incoming type
     const normalizedType = type
       ?.trim()
-      .toLowerCase();
+      .toLowerCase().replace(/[^a-z0-9_-]/g, '-');
   
     // Convert display label to internal key
     let paymentType = normalizedType;
   
     if (
-      normalizedType.includes('ideal')
+      normalizedType.includes('ideal | wero')
     ) {
       paymentType = 'ideal';
     }
