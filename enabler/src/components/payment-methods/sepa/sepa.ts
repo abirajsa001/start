@@ -59,7 +59,7 @@ export class Sepa extends BaseComponent {
   mount(selector: string) {
 
     /**
-     * Correct selector escaping
+     * Fix commercetools selector issue
      */
     const safeSelector =
       '#' + CSS.escape(
@@ -82,40 +82,39 @@ export class Sepa extends BaseComponent {
     }
 
     /**
-     * Render template
+     * Same behavior as iDEAL
+     * Prevent radio button removal
      */
-    container.insertAdjacentHTML("beforeend",this._getTemplate());
+    container.insertAdjacentHTML(
+      "afterbegin",
+      this._getTemplate()
+    );
 
     /**
-     * Update storefront label
+     * Update only current payment label
      */
     setTimeout(() => {
 
-      const labels =
-        document.querySelectorAll(
+      const paymentLabel =
+        container.querySelector(
           'label'
         );
 
-      labels.forEach((label) => {
+      if (
+        paymentLabel &&
+        paymentLabel.textContent
+          ?.toLowerCase()
+          .includes('sepa')
+      ) {
 
-        const text =
-          label.textContent
-            ?.trim()
-            .toLowerCase();
+        paymentLabel.textContent =
+          'Direct Debit SEPA';
+      }
 
-        if (
-          text?.includes('sepa')
-        ) {
-
-          label.textContent =
-            'Direct Debit SEPA';
-        }
-      });
-
-    }, 300);
+    }, 100);
 
     /**
-     * Bind pay button
+     * Bind button event
      */
     if (this.showPayButton) {
 
@@ -141,6 +140,9 @@ export class Sepa extends BaseComponent {
 
   async submit() {
 
+    /**
+     * Init SDK
+     */
     this.sdk.init({
       environment:
         this.environment
@@ -158,6 +160,9 @@ export class Sepa extends BaseComponent {
 
     try {
 
+      /**
+       * Form values
+       */
       const accountHolderInput =
         document.getElementById(
           'nn_account_holder'
@@ -185,6 +190,30 @@ export class Sepa extends BaseComponent {
         bicInput?.value
           ?.trim() ?? '';
 
+      /**
+       * Basic validation
+       */
+      if (!accountHolder) {
+
+        this.onError(
+          "Please enter account holder name"
+        );
+
+        return;
+      }
+
+      if (!iban) {
+
+        this.onError(
+          "Please enter IBAN"
+        );
+
+        return;
+      }
+
+      /**
+       * Request payload
+       */
       const requestData:
         PaymentRequestSchemaDTO = {
 
@@ -213,6 +242,9 @@ export class Sepa extends BaseComponent {
           baseSiteUrl,
       };
 
+      /**
+       * API request
+       */
       const response =
         await fetch(
           this.processorUrl +
@@ -237,9 +269,35 @@ export class Sepa extends BaseComponent {
           }
         );
 
+      /**
+       * Validate response
+       */
+      if (!response.ok) {
+
+        const errorText =
+          await response.text();
+
+        console.error(
+          'HTTP error response:',
+          errorText
+        );
+
+        throw new Error(
+          `HTTP error! status: ${response.status}`
+        );
+      }
+
       const data =
         await response.json();
 
+      console.log(
+        'SEPA payment response:',
+        data
+      );
+
+      /**
+       * Success
+       */
       if (
         data.paymentReference
       ) {
@@ -260,11 +318,18 @@ export class Sepa extends BaseComponent {
         );
       }
 
-    } catch (e) {
+    } catch (e: any) {
 
       console.error(
-        'SEPA Error:',
-        e
+        'SEPA submit error:',
+        {
+
+          message:
+            e?.message,
+
+          stack:
+            e?.stack,
+        }
       );
 
       this.onError(
@@ -289,7 +354,7 @@ export class Sepa extends BaseComponent {
 
             type="button"
           >
-            Pay
+            Pay Now
           </button>
         `
         : "";
@@ -297,12 +362,21 @@ export class Sepa extends BaseComponent {
     return `
 
       <div
+        class="${styles.wrapper}"
+
         style="
           width:100%;
           display:flex;
           flex-direction:column;
+          gap:20px;
+          margin-top:20px;
         "
       >
+
+        <p>
+          Pay conveniently using
+          Direct Debit SEPA.
+        </p>
 
         <div
           id="nn_sepa_form"
@@ -315,6 +389,7 @@ export class Sepa extends BaseComponent {
           "
         >
 
+          <!-- Account Holder -->
           <div
             style="
               display:flex;
@@ -325,6 +400,13 @@ export class Sepa extends BaseComponent {
 
             <label
               for="nn_account_holder"
+
+              style="
+                font-size:14px;
+                font-weight:600;
+                color:#333;
+                margin-bottom:6px;
+              "
             >
               Account Holder
               <span style="color:red;">
@@ -342,13 +424,15 @@ export class Sepa extends BaseComponent {
               autocomplete="off"
 
               style="
-                padding:12px;
+                padding:12px 14px;
                 border:1px solid #d4d4d4;
                 border-radius:6px;
+                font-size:15px;
               "
             />
           </div>
 
+          <!-- IBAN -->
           <div
             style="
               display:flex;
@@ -359,6 +443,13 @@ export class Sepa extends BaseComponent {
 
             <label
               for="nn_sepa_account_no"
+
+              style="
+                font-size:14px;
+                font-weight:600;
+                color:#333;
+                margin-bottom:6px;
+              "
             >
               IBAN
               <span style="color:red;">
@@ -376,13 +467,16 @@ export class Sepa extends BaseComponent {
               autocomplete="off"
 
               style="
-                padding:12px;
+                padding:12px 14px;
                 border:1px solid #d4d4d4;
                 border-radius:6px;
+                font-size:15px;
+                text-transform:uppercase;
               "
             />
           </div>
 
+          <!-- BIC -->
           <div
             style="
               display:flex;
@@ -393,6 +487,13 @@ export class Sepa extends BaseComponent {
 
             <label
               for="nn_sepa_bic"
+
+              style="
+                font-size:14px;
+                font-weight:600;
+                color:#333;
+                margin-bottom:6px;
+              "
             >
               BIC
             </label>
@@ -407,9 +508,10 @@ export class Sepa extends BaseComponent {
               autocomplete="off"
 
               style="
-                padding:12px;
+                padding:12px 14px;
                 border:1px solid #d4d4d4;
                 border-radius:6px;
+                font-size:15px;
               "
             />
           </div>
