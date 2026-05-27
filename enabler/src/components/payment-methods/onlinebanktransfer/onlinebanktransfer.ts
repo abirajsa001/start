@@ -61,12 +61,18 @@ export class Onlinebanktransfer
 
   mount(selector: string) {
 
-    // FIX storefront selector issue
+    /**
+     * Fix commercetools selector issue
+     */
     const safeSelector =
-      selector.replace(/\|/g, '\\|');
+      '#' + CSS.escape(
+        selector.substring(1)
+      );
 
     const container =
-      document.querySelector(safeSelector);
+      document.querySelector(
+        safeSelector
+      );
 
     if (!container) {
 
@@ -78,49 +84,57 @@ export class Onlinebanktransfer
       return;
     }
 
-    // Prevent duplicate render
-    if (
-      document.getElementById(
-        "novalnet-onlinebanktransfer-wrapper"
-      )
-    ) {
-      return;
-    }
-
+    /**
+     * Same behavior as iDEAL
+     * Prevent radio button removal
+     */
     container.insertAdjacentHTML(
-      "beforeend",
+      "afterbegin",
       this._getTemplate()
     );
 
+    /**
+     * Update only current payment label
+     */
+    setTimeout(() => {
+
+      const paymentLabel =
+        container.querySelector(
+          'label'
+        );
+
+      if (
+        paymentLabel &&
+        paymentLabel.textContent
+          ?.toLowerCase()
+          .includes('onlinebanktransfer')
+      ) {
+
+        paymentLabel.textContent =
+          'Online bank transfer';
+      }
+
+    }, 100);
+
+    /**
+     * Bind button event
+     */
     if (this.showPayButton) {
 
       const button =
         document.querySelector(
           "#onlinebanktransfer-paymentButton"
-        ) as HTMLButtonElement | null;
+        );
 
       if (button) {
 
         button.addEventListener(
           "click",
-          async (e) => {
+          (e) => {
 
             e.preventDefault();
 
-            // Prevent double submit
-            if (this.isSubmitting) {
-              return;
-            }
-
-            this.isSubmitting = true;
-
-            button.disabled = true;
-
-            await this.submit();
-
-            button.disabled = false;
-
-            this.isSubmitting = false;
+            this.submit();
           }
         );
       }

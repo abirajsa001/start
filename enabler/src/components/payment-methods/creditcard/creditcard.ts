@@ -56,13 +56,21 @@ export class Creditcard extends BaseComponent {
       componentOptions?.showPayButton ?? false;
   }
 
+
   mount(selector: string) {
 
+    /**
+     * Fix commercetools selector issue
+     */
     const safeSelector =
-      selector.replace(/\|/g, '\\|');
+      '#' + CSS.escape(
+        selector.substring(1)
+      );
 
     const container =
-      document.querySelector(safeSelector);
+      document.querySelector(
+        safeSelector
+      );
 
     if (!container) {
 
@@ -74,54 +82,61 @@ export class Creditcard extends BaseComponent {
       return;
     }
 
+    /**
+     * Same behavior as iDEAL
+     * Prevent radio button removal
+     */
     container.insertAdjacentHTML(
-      "beforeend",
+      "afterbegin",
       this._getTemplate()
     );
 
+    /**
+     * Update only current payment label
+     */
+    setTimeout(() => {
+
+      const paymentLabel =
+        container.querySelector(
+          'label'
+        );
+
+      if (
+        paymentLabel &&
+        paymentLabel.textContent
+          ?.toLowerCase()
+          .includes('creditcard')
+      ) {
+
+        paymentLabel.textContent =
+          'Credit/Debit Cards';
+      }
+
+    }, 100);
+
+    /**
+     * Bind button event
+     */
     if (this.showPayButton) {
 
-      const payButton =
+      const button =
         document.querySelector(
           "#purchaseOrderForm-paymentButton"
-        ) as HTMLButtonElement | null;
+        );
 
-      if (payButton) {
+      if (button) {
 
-        payButton.disabled = true;
-
-        payButton.addEventListener(
+        button.addEventListener(
           "click",
-          async (e) => {
+          (e) => {
 
             e.preventDefault();
 
-            await this.submit();
+            this.submit();
           }
         );
       }
     }
-
-    // Load Novalnet SDK
-    this._loadNovalnetScriptOnce()
-      .then(() => {
-
-        const payButton =
-          document.querySelector(
-            "#purchaseOrderForm-paymentButton"
-          ) as HTMLButtonElement | null;
-
-        this._initNovalnetCreditCardForm(
-          payButton
-        );
-      })
-      .catch((err) => {
-
-        console.error(
-          "Failed to load Novalnet SDK:",
-          err
-        );
-      });
   }
 
   async submit() {

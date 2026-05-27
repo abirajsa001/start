@@ -106,6 +106,34 @@ export class NovalnetPaymentEnabler implements PaymentEnabler {
       paymentType = 'ach';
     }
 
+    if (normalizedType.includes('Online bank transfer') || normalizedType.includes('onlinebanktransfer') || normalizedType.includes('Online bank transfer')) {
+      paymentType = 'onlinebanktransfer';
+    }
+
+    if (normalizedType.includes('Credit/Debit Cards') || normalizedType.includes('creditcard') || normalizedType.includes('Credit/Debit Cards')) {
+      paymentType = 'creditcard';
+    }
+
+    if (normalizedType.includes('MB Way') || normalizedType.includes('mbway') || normalizedType.includes('MB Way')) {
+      paymentType = 'mbway';
+    }
+
+    if (normalizedType.includes('Invoice with payment guarantee') || normalizedType.includes('GuaranteedInvoice') || normalizedType.includes('Invoice with payment guarantee')) {
+      paymentType = 'GuaranteedInvoice';
+    }
+
+    if (normalizedType.includes('Direct Debit SEPA with payment guarantee') || normalizedType.includes('GuaranteedSepa') || normalizedType.includes('Direct Debit SEPA with payment guarantee')) {
+      paymentType = 'GuaranteedSepa';
+    }
+
+    if (normalizedType.includes('PostFinance Card') || normalizedType.includes('postfinancecard') || normalizedType.includes('PostFinance Card')) {
+      paymentType = 'postfinancecard';
+    }
+
+    if (normalizedType.includes('PostFinance E-Finance') || normalizedType.includes('postfinance') || normalizedType.includes('PostFinance E-Finance')) {
+      paymentType = 'postfinance';
+    }
+
     const supportedMethods = {
       invoice: InvoiceBuilder,
       prepayment: PrepaymentBuilder,

@@ -333,7 +333,7 @@ export class Ach extends BaseComponent {
         <!-- Account Holder -->
         <div>
 
-          <label for="achForm-accHolder">
+          <label for="achForm-accHolder">  
             ${
               locale.startsWith("de")
                 ? "Kontoinhaber"
@@ -352,7 +352,6 @@ export class Ach extends BaseComponent {
               margin-top:6px;
             "
           />
-
         </div>
 
         <!-- Account Number -->

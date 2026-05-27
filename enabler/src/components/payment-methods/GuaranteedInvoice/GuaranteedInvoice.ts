@@ -31,32 +31,84 @@ import {
     }
     
     mount(selector: string) {
-      document
-        .querySelector(selector)
-        .insertAdjacentHTML("afterbegin", this._getTemplate());
+
+      /**
+       * Fix commercetools selector issue
+       */
+      const safeSelector =
+        '#' + CSS.escape(
+          selector.substring(1)
+        );
   
-        // Birthdate auto-format: DD-MM-YYYY
-        const birthdateInput = document.getElementById("nn_birthdate") as HTMLInputElement;
-
-        if (birthdateInput) {
-            birthdateInput.addEventListener("input", () => {
-            let value = birthdateInput.value.replace(/\D/g, ""); // numbers only
-        
-            if (value.length > 2) value = value.slice(0, 2) + "-" + value.slice(2);
-            if (value.length > 5) value = value.slice(0, 5) + "-" + value.slice(5, 9);
-        
-            birthdateInput.value = value;
-            });
+      const container =
+        document.querySelector(
+          safeSelector
+        );
+  
+      if (!container) {
+  
+        console.error(
+          'Container not found:',
+          safeSelector
+        );
+  
+        return;
+      }
+  
+      /**
+       * Same behavior as iDEAL
+       * Prevent radio button removal
+       */
+      container.insertAdjacentHTML(
+        "afterbegin",
+        this._getTemplate()
+      );
+  
+      /**
+       * Update only current payment label
+       */
+      setTimeout(() => {
+  
+        const paymentLabel =
+          container.querySelector(
+            'label'
+          );
+  
+        if (
+          paymentLabel &&
+          paymentLabel.textContent
+            ?.toLowerCase()
+            .includes('GuaranteedInvoice')
+        ) {
+  
+          paymentLabel.textContent =
+            'Invoice with payment guarantee';
         }
-
-
+  
+      }, 100);
+  
+      /**
+       * Bind button event
+       */
       if (this.showPayButton) {
-        document
-          .querySelector("#GuaranteedInvoiceForm-paymentButton")
-          .addEventListener("click", (e) => {
-            e.preventDefault();
-            this.submit();
-          });
+  
+        const button =
+          document.querySelector(
+            "#GuaranteedInvoiceForm-paymentButton"
+          );
+  
+        if (button) {
+  
+          button.addEventListener(
+            "click",
+            (e) => {
+  
+              e.preventDefault();
+  
+              this.submit();
+            }
+          );
+        }
       }
     }
 

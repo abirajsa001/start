@@ -58,12 +58,18 @@ export class Postfinance extends BaseComponent {
 
   mount(selector: string) {
 
-    // Escape selector safely
+    /**
+     * Fix commercetools selector issue
+     */
     const safeSelector =
-      selector.replace(/\|/g, '\\|');
+      '#' + CSS.escape(
+        selector.substring(1)
+      );
 
     const container =
-      document.querySelector(safeSelector);
+      document.querySelector(
+        safeSelector
+      );
 
     if (!container) {
 
@@ -75,11 +81,41 @@ export class Postfinance extends BaseComponent {
       return;
     }
 
+    /**
+     * Same behavior as iDEAL
+     * Prevent radio button removal
+     */
     container.insertAdjacentHTML(
-      "beforeend",
+      "afterbegin",
       this._getTemplate()
     );
 
+    /**
+     * Update only current payment label
+     */
+    setTimeout(() => {
+
+      const paymentLabel =
+        container.querySelector(
+          'label'
+        );
+
+      if (
+        paymentLabel &&
+        paymentLabel.textContent
+          ?.toLowerCase()
+          .includes('postfinance')
+      ) {
+
+        paymentLabel.textContent =
+          'PostFinance E-Finance';
+      }
+
+    }, 100);
+
+    /**
+     * Bind button event
+     */
     if (this.showPayButton) {
 
       const button =

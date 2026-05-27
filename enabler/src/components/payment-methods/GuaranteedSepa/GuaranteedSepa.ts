@@ -31,33 +31,86 @@ import {
     }
   
     mount(selector: string) {
-        document
-          .querySelector(selector)
-          .insertAdjacentHTML("afterbegin", this._getTemplate());
-      
-        // Birthdate auto-format: DD-MM-YYYY
-        const birthdateInput = document.getElementById("nn_sepa_birthdate") as HTMLInputElement;
-      
-        if (birthdateInput) {
-          birthdateInput.addEventListener("input", () => {
-            let value = birthdateInput.value.replace(/\D/g, ""); // numbers only
-      
-            if (value.length > 2) value = value.slice(0, 2) + "-" + value.slice(2);
-            if (value.length > 5) value = value.slice(0, 5) + "-" + value.slice(5, 9);
-      
-            birthdateInput.value = value;
-          });
+
+      /**
+       * Fix commercetools selector issue
+       */
+      const safeSelector =
+        '#' + CSS.escape(
+          selector.substring(1)
+        );
+  
+      const container =
+        document.querySelector(
+          safeSelector
+        );
+  
+      if (!container) {
+  
+        console.error(
+          'Container not found:',
+          safeSelector
+        );
+  
+        return;
+      }
+  
+      /**
+       * Same behavior as iDEAL
+       * Prevent radio button removal
+       */
+      container.insertAdjacentHTML(
+        "afterbegin",
+        this._getTemplate()
+      );
+  
+      /**
+       * Update only current payment label
+       */
+      setTimeout(() => {
+  
+        const paymentLabel =
+          container.querySelector(
+            'label'
+          );
+  
+        if (
+          paymentLabel &&
+          paymentLabel.textContent
+            ?.toLowerCase()
+            .includes('GuaranteedSepa')
+        ) {
+  
+          paymentLabel.textContent =
+            'Direct Debit SEPA with payment guarantee';
         }
-      
-        // Pay button submit
-        if (this.showPayButton) {
-          const payBtn = document.querySelector("#purchaseOrderForm-paymentButton");
-          payBtn?.addEventListener("click", (e) => {
-            e.preventDefault();
-            this.submit();
-          });
+  
+      }, 100);
+  
+      /**
+       * Bind button event
+       */
+      if (this.showPayButton) {
+  
+        const button =
+          document.querySelector(
+            "#purchaseOrderForm-paymentButton"
+          );
+  
+        if (button) {
+  
+          button.addEventListener(
+            "click",
+            (e) => {
+  
+              e.preventDefault();
+  
+              this.submit();
+            }
+          );
         }
       }
+    }
       
   
     async submit() {
