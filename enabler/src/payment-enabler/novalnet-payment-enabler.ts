@@ -98,14 +98,13 @@ export class NovalnetPaymentEnabler implements PaymentEnabler {
       paymentType = 'ideal';
     }
   
-    if (
-      normalizedType.includes('direct debit sepa') ||
-      normalizedType.includes('sepa') || normalizedType.includes('Direct Debit SEPA')
-    ) {
-
+    if (normalizedType.includes('direct debit sepa') || normalizedType.includes('sepa') || normalizedType.includes('Direct Debit SEPA')) {
       paymentType = 'sepa';
     }
 
+    if (normalizedType.includes('direct debit ach') || normalizedType.includes('ach') || normalizedType.includes('Direct Debit ACH')) {
+      paymentType = 'ach';
+    }
 
     const supportedMethods = {
       invoice: InvoiceBuilder,

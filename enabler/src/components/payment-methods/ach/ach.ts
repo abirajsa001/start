@@ -58,11 +58,18 @@ export class Ach extends BaseComponent {
 
   mount(selector: string) {
 
+    /**
+     * Fix commercetools selector issue
+     */
     const safeSelector =
-      selector.replace(/\|/g, '\\|');
+      '#' + CSS.escape(
+        selector.substring(1)
+      );
 
     const container =
-      document.querySelector(safeSelector);
+      document.querySelector(
+        safeSelector
+      );
 
     if (!container) {
 
@@ -74,14 +81,45 @@ export class Ach extends BaseComponent {
       return;
     }
 
-    // IMPORTANT FIX
-    container.innerHTML =
-      this._getTemplate();
+    /**
+     * Same behavior as iDEAL
+     * Prevent radio button removal
+     */
+    container.insertAdjacentHTML(
+      "afterbegin",
+      this._getTemplate()
+    );
 
+    /**
+     * Update only current payment label
+     */
+    setTimeout(() => {
+
+      const paymentLabel =
+        container.querySelector(
+          'label'
+        );
+
+      if (
+        paymentLabel &&
+        paymentLabel.textContent
+          ?.toLowerCase()
+          .includes('ach')
+      ) {
+
+        paymentLabel.textContent =
+          'Direct Debit ACH';
+      }
+
+    }, 100);
+
+    /**
+     * Bind button event
+     */
     if (this.showPayButton) {
 
       const button =
-        container.querySelector(
+        document.querySelector(
           "#achForm-paymentButton"
         );
 
