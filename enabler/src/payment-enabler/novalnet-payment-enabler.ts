@@ -106,31 +106,31 @@ export class NovalnetPaymentEnabler implements PaymentEnabler {
       paymentType = 'ach';
     }
 
-    if (normalizedType.includes('Online bank transfer') || normalizedType.includes('onlinebanktransfer') || normalizedType.includes('Online bank transfer')) {
+    if (normalizedType.includes('online bank transfer') || normalizedType.includes('onlinebanktransfer') || normalizedType.includes('Online bank transfer')) {
       paymentType = 'onlinebanktransfer';
     }
 
-    if (normalizedType.includes('Credit/Debit Cards') || normalizedType.includes('creditcard') || normalizedType.includes('Credit/Debit Cards')) {
+    if (normalizedType.includes('credit/debit cards') || normalizedType.includes('creditcard') || normalizedType.includes('Credit/Debit Cards')) {
       paymentType = 'creditcard';
     }
 
-    if (normalizedType.includes('MB Way') || normalizedType.includes('mbway') || normalizedType.includes('MB Way')) {
+    if (normalizedType.includes('mb way') || normalizedType.includes('mbway') || normalizedType.includes('MB Way')) {
       paymentType = 'mbway';
     }
 
-    if (normalizedType.includes('Invoice with payment guarantee') || normalizedType.includes('GuaranteedInvoice') || normalizedType.includes('Invoice with payment guarantee')) {
+    if (normalizedType.includes('invoice with payment guarantee') || normalizedType.includes('GuaranteedInvoice') || normalizedType.includes('Invoice with payment guarantee')) {
       paymentType = 'GuaranteedInvoice';
     }
 
-    if (normalizedType.includes('Direct Debit SEPA with payment guarantee') || normalizedType.includes('GuaranteedSepa') || normalizedType.includes('Direct Debit SEPA with payment guarantee')) {
+    if (normalizedType.includes('direct debit sepa with payment guarantee') || normalizedType.includes('GuaranteedSepa') || normalizedType.includes('Direct Debit SEPA with payment guarantee')) {
       paymentType = 'GuaranteedSepa';
     }
 
-    if (normalizedType.includes('PostFinance Card') || normalizedType.includes('postfinancecard') || normalizedType.includes('PostFinance Card')) {
+    if (normalizedType.includes('postFinance card') || normalizedType.includes('postfinancecard') || normalizedType.includes('PostFinance Card')) {
       paymentType = 'postfinancecard';
     }
 
-    if (normalizedType.includes('PostFinance E-Finance') || normalizedType.includes('postfinance') || normalizedType.includes('PostFinance E-Finance')) {
+    if (normalizedType.includes('postFinance e-finance') || normalizedType.includes('postfinance') || normalizedType.includes('PostFinance E-Finance')) {
       paymentType = 'postfinance';
     }
 
