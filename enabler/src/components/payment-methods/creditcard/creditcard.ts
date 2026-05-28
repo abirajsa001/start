@@ -41,6 +41,8 @@ export class Creditcard extends BaseComponent {
 
   private showPayButton: boolean;
 
+  private clientKey: string = "";
+
   constructor(
     baseOptions: BaseOptions,
     componentOptions: ComponentOptions
@@ -56,8 +58,7 @@ export class Creditcard extends BaseComponent {
       componentOptions?.showPayButton ?? false;
   }
 
-
-  mount(selector: string) {
+  async mount(selector: string) {
 
     /**
      * Fix commercetools selector issue
@@ -83,8 +84,19 @@ export class Creditcard extends BaseComponent {
     }
 
     /**
-     * Same behavior as iDEAL
-     * Prevent radio button removal
+     * Prevent duplicate rendering
+     */
+    const existing =
+      container.querySelector(
+        '#novalnet_iframe'
+      );
+
+    if (existing) {
+      return;
+    }
+
+    /**
+     * Render template
      */
     container.insertAdjacentHTML(
       "afterbegin",
@@ -92,7 +104,7 @@ export class Creditcard extends BaseComponent {
     );
 
     /**
-     * Update only current payment label
+     * Update payment label
      */
     setTimeout(() => {
 
@@ -115,27 +127,74 @@ export class Creditcard extends BaseComponent {
     }, 100);
 
     /**
-     * Bind button event
+     * Load Novalnet SDK
      */
-    if (this.showPayButton) {
+    await this._loadNovalnetScriptOnce();
 
-      const button =
-        document.querySelector(
-          "#purchaseOrderForm-paymentButton"
-        );
+    /**
+     * Pay button
+     */
+    const payButton =
+      document.querySelector(
+        "#novalnet-creditcard-pay"
+      ) as HTMLButtonElement | null;
 
-      if (button) {
+    /**
+     * Init Novalnet iframe
+     */
+    await this._initNovalnetCreditCardForm(
+      payButton
+    );
 
-        button.addEventListener(
-          "click",
-          (e) => {
+    /**
+     * Submit event
+     */
+    if (payButton) {
 
-            e.preventDefault();
+      payButton.addEventListener(
+        "click",
+        async (e) => {
 
-            this.submit();
+          e.preventDefault();
+
+          payButton.disabled = true;
+
+          try {
+
+            const NovalnetUtility =
+              (window as any).NovalnetUtility;
+
+            if (!NovalnetUtility) {
+
+              this.onError(
+                "Novalnet SDK not loaded"
+              );
+
+              payButton.disabled = false;
+
+              return;
+            }
+
+            /**
+             * Generate pan hash
+             */
+            NovalnetUtility.getPanHash();
+
+          } catch (err) {
+
+            console.error(
+              "Pan hash error:",
+              err
+            );
+
+            payButton.disabled = false;
+
+            this.onError(
+              "Payment initialization failed"
+            );
           }
-        );
-      }
+        }
+      );
     }
   }
 
@@ -186,6 +245,15 @@ export class Creditcard extends BaseComponent {
           "Credit card information is missing or invalid."
         );
 
+        const payButton =
+          document.querySelector(
+            "#novalnet-creditcard-pay"
+          ) as HTMLButtonElement | null;
+
+        if (payButton) {
+          payButton.disabled = false;
+        }
+
         return;
       }
 
@@ -193,10 +261,17 @@ export class Creditcard extends BaseComponent {
         PaymentRequestSchemaDTO = {
 
         paymentMethod: {
+
           type: "CREDITCARD",
-          panHash: panhash,
-          uniqueId: uniqueId,
-          doRedirect: doRedirect,
+
+          panHash:
+            panhash,
+
+          uniqueId:
+            uniqueId,
+
+          doRedirect:
+            doRedirect,
         },
 
         paymentOutcome:
@@ -209,25 +284,29 @@ export class Creditcard extends BaseComponent {
           baseSiteUrl,
       };
 
-      const response = await fetch(
-        this.processorUrl + "/directPayment",
-        {
+      const response =
+        await fetch(
+          this.processorUrl +
+          "/directPayment",
+          {
 
-          method: "POST",
+            method: "POST",
 
-          headers: {
-            "Content-Type":
-              "application/json",
+            headers: {
 
-            "X-Session-Id":
-              this.sessionId,
-          },
+              "Content-Type":
+                "application/json",
 
-          body: JSON.stringify(
-            requestData
-          ),
-        }
-      );
+              "X-Session-Id":
+                this.sessionId,
+            },
+
+            body:
+              JSON.stringify(
+                requestData
+              ),
+          }
+        );
 
       if (!response.ok) {
 
@@ -247,15 +326,31 @@ export class Creditcard extends BaseComponent {
       const data =
         await response.json();
 
+      console.log(
+        'Credit card response:',
+        data
+      );
+
       if (data.paymentReference) {
 
         this.onComplete?.({
+
           isSuccess: true,
+
           paymentReference:
             data.paymentReference,
         });
 
       } else {
+
+        const payButton =
+          document.querySelector(
+            "#novalnet-creditcard-pay"
+          ) as HTMLButtonElement | null;
+
+        if (payButton) {
+          payButton.disabled = false;
+        }
 
         this.onError(
           "Payment failed. Please try again."
@@ -268,6 +363,15 @@ export class Creditcard extends BaseComponent {
         "Credit card payment error:",
         e
       );
+
+      const payButton =
+        document.querySelector(
+          "#novalnet-creditcard-pay"
+        ) as HTMLButtonElement | null;
+
+      if (payButton) {
+        payButton.disabled = false;
+      }
 
       this.onError(
         "Some error occurred. Please try again."
@@ -329,7 +433,9 @@ export class Creditcard extends BaseComponent {
               ${buttonStyles.fullWidth}
               ${styles.submitButton}"
 
-              id="purchaseOrderForm-paymentButton"
+              id="novalnet-creditcard-pay"
+
+              type="button"
             >
               ${locale.startsWith("de")
                 ? "Bezahlen"
@@ -367,6 +473,8 @@ export class Creditcard extends BaseComponent {
 
     script.src = src;
 
+    script.async = true;
+
     script.crossOrigin = "anonymous";
 
     const loadPromise =
@@ -398,30 +506,34 @@ export class Creditcard extends BaseComponent {
       return;
     }
 
-    const res = await fetch(
-      this.processorUrl + "/getconfig",
-      {
+    const res =
+      await fetch(
+        this.processorUrl +
+        "/getconfig",
+        {
 
-        method: "POST",
+          method: "POST",
 
-        headers: {
-          "Content-Type":
-            "application/json",
+          headers: {
 
-          Accept:
-            "application/json",
-        },
+            "Content-Type":
+              "application/json",
 
-        body: JSON.stringify({
-          paymentMethod: {
-            type: "CREDITCARD"
+            Accept:
+              "application/json",
           },
 
-          paymentOutcome:
-            "AUTHORIZED",
-        }),
-      }
-    );
+          body: JSON.stringify({
+
+            paymentMethod: {
+              type: "CREDITCARD"
+            },
+
+            paymentOutcome:
+              "AUTHORIZED",
+          }),
+        }
+      );
 
     const json =
       await res.json();
@@ -434,7 +546,9 @@ export class Creditcard extends BaseComponent {
     }
 
     this.clientKey =
-      String(json.paymentReference);
+      String(
+        json.paymentReference
+      );
 
     NovalnetUtility.setClientKey(
       this.clientKey
@@ -444,7 +558,7 @@ export class Creditcard extends BaseComponent {
 
       callback: {
 
-        on_success: (data: any) => {
+        on_success: async (data: any) => {
 
           (
             document.getElementById(
@@ -464,24 +578,30 @@ export class Creditcard extends BaseComponent {
             ) as HTMLInputElement
           ).value = data["do_redirect"];
 
-          if (payButton) {
-
-            payButton.disabled = false;
-
-            payButton.click();
-          }
+          /**
+           * Trigger actual payment
+           */
+          await this.submit();
 
           return true;
         },
 
         on_error: (data: any) => {
 
+          console.error(
+            "Novalnet iframe error:",
+            data
+          );
+
           if (data?.error_message) {
-            alert(data.error_message);
+
+            alert(
+              data.error_message
+            );
           }
 
           if (payButton) {
-            payButton.disabled = true;
+            payButton.disabled = false;
           }
 
           return false;
@@ -502,23 +622,36 @@ export class Creditcard extends BaseComponent {
               ?.toUpperCase(),
 
           card_holder: {
-            label: "Card holder name",
-            place_holder: "Name on card",
+
+            label:
+              "Card holder name",
+
+            place_holder:
+              "Name on card",
           },
 
           card_number: {
-            label: "Card number",
+
+            label:
+              "Card number",
+
             place_holder:
               "XXXX XXXX XXXX XXXX",
           },
 
           expiry_date: {
-            label: "Expiry date",
+
+            label:
+              "Expiry date",
           },
 
           cvc: {
-            label: "CVC/CVV/CID",
-            place_holder: "XXX",
+
+            label:
+              "CVC/CVV/CID",
+
+            place_holder:
+              "XXX",
           },
         },
       },
